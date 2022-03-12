@@ -36,8 +36,9 @@ class Board:
         -----
         6|7|8
     """
-    def __init__(self, turn=Space.X, position=None, board_dimensions=(3,3)) -> None:
+    def __init__(self, turn=Space.X, position=None, board_dimensions=(3,3), max_depth=8) -> None:
         self.board_dimensions = board_dimensions
+        self.max_depth = max_depth
         if position is None:
             position = self.reshape([Space.E] * (board_dimensions[0] * board_dimensions[1]), board_dimensions)
         self.position = self.convert_array(position)
@@ -76,6 +77,12 @@ class Board:
         if dimensions[0] * dimensions[1] != len(array):
             raise ValueError("Dimensions mismatch")
         return [array[i:i+dimensions[0]] for i in range(0, len(array), dimensions[1])]
+    
+    def ravel(self, array):
+        """
+        Helper method to convert an nxn dimensional array into a 1-D array
+        """
+        return [col for row in array for col in row]
 
     @property
     def play(self, location):
@@ -92,7 +99,16 @@ class Board:
         any empty space.
         """
         return [i for i in range(len(self.position)) if self.position[i] == Space.E]
-        
+    
+    def get_successors(self):
+        return self.legal_moves
+    
+    def next_state(self):
+        return
+    
+    def is_terminal(self):
+        return self.is_win or self.is_draw or self.max_depth == 0
+
     @property
     def is_win(self) -> bool:
         """
@@ -129,6 +145,10 @@ class Board:
                 return 1
         # Draw
         return 0
+
+    @property
+    def utility(self):
+        pass
 
     @property
     def is_draw(self) -> bool:
