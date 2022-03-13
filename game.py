@@ -96,6 +96,10 @@ class Game:
     
     def __repr__(self) -> str:
         pass
+
+    @classmethod
+    def from_json(self, json):
+        pass
     
     def play_game(self, *players):
         """Play an n-person, move-alternating game."""
