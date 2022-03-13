@@ -8,14 +8,14 @@ Created on Sat Mar 12 17:09:16 2022
 from search import alpha_beta_search, expect_minmax
 import random
 
-def query_player(Game, state):
+def query_player(game, state):
     """Make a move by querying standard input."""
     print("current state:")
-    Game.display(state)
-    print("available moves: {}".format(Game.actions(state)))
+    game.display(state)
+    print("available moves: {}".format(game.actions(state)))
     print("")
     move = None
-    if Game.actions(state):
+    if game.actions(state):
         move_string = input('Your move? ')
         try:
             move = eval(move_string)
@@ -26,14 +26,14 @@ def query_player(Game, state):
     return move
 
 
-def random_player(Game, state):
+def random_player(game, state):
     """A player that chooses a legal move at random."""
-    return random.choice(Game.actions(state)) if Game.actions(state) else None
+    return random.choice(game.actions(state)) if game.actions(state) else None
 
 
-def alpha_beta_player(Game, state):
-    return alpha_beta_search(state, Game)
+def alpha_beta_player(game, state):
+    return alpha_beta_search(state, game)
 
 
-def expect_min_max_player(Game, state):
-    return expect_minmax(state, Game)
+def expect_min_max_player(game, state):
+    return expect_minmax(state, game)
