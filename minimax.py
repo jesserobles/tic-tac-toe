@@ -1,5 +1,3 @@
-from board import Board
-
 """
 Pseudocode from lecture slides:
 
@@ -74,7 +72,7 @@ def minimax_search(game, state):
 
 def alpha_beta_search(game, state):
     player = game.to_move(state)
-    value, move = max_value(game, state, float('-inf'), float('inf'))
+    value, move = max_value(game, state, player, float('-inf'), float('inf'))
     return move
 
 def max_value(game, state, player, alpha=None, beta=None):
