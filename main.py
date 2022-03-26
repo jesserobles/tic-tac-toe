@@ -1,9 +1,5 @@
-from constants import max_agent
-from value import value
+from game import Game
+from players import random_player, query_player, minmax_player, alpha_beta_player
 
-board_size = 3
-board = [[None for col in range(board_size)] for row in range(board_size)]
-agent_making_move = max_agent
-
-
-value(board, agent_making_move)
+game = Game(4,4,4)
+game.play_game(query_player, alpha_beta_player)
