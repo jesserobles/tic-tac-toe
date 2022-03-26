@@ -39,7 +39,7 @@ class Game:
         self.initial = State(to_move='X', utility=0, board={}, actions=actions)
 
     def is_terminal(self, state) -> bool:
-        return state.utility != 0 or len(state.actions) == 0
+        return state.utility == 1 or state.utility == -1 or len(state.actions) == 0
 
     def to_move(self, state):
         return state.to_move
@@ -64,13 +64,21 @@ class Game:
     
     def compute_utility(self, board, move, player):
         """If 'X' wins with this move, return 1; if 'O' wins return -1; else return 0."""
-        if (self.k_in_row(board, move, player, (0, 1)) or
-                self.k_in_row(board, move, player, (1, 0)) or
-                self.k_in_row(board, move, player, (1, -1)) or
-                self.k_in_row(board, move, player, (1, 1))):
-            return +1 if player == 'X' else -1
+        longest_vertical = self.k_in_row(board, move, player, (0, 1))
+        longest_horizontal = self.k_in_row(board, move, player, (1, 0))
+        longest_diag_top_right_to_bottom_left = self.k_in_row(board, move, player, (1, -1))
+        longest_diag_top_left_to_bottom_right = self.k_in_row(board, move, player, (1, 1))
+
+        longest = max(longest_vertical, longest_horizontal, longest_diag_top_right_to_bottom_left, longest_diag_top_left_to_bottom_right)
+        utility = self.depth_limited_utility_estimation(longest)
+
+        if player == 'X':
+            return utility
         else:
-            return 0
+            return -utility
+
+    def depth_limited_utility_estimation(self, longest_run):
+        return round(longest_run/self.k,1)
 
     def k_in_row(self, board, move, player, delta_x_y):
         """Return true if there is a line through move on board for player."""
@@ -85,7 +93,7 @@ class Game:
             n += 1
             x, y = x - delta_x, y - delta_y
         n -= 1  # Because we counted move itself twice
-        return n >= self.k
+        return n
     
     def display(self, state):
         board = state.board
