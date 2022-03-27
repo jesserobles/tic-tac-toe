@@ -1,3 +1,4 @@
+import math
 
 class State:
     def __init__(self, to_move="X", utility=0, board={}, actions=None) -> None:
@@ -30,14 +31,14 @@ class Game:
     """
     A class representing a tic-tac-toe game.
     """
-    def __init__(self, h=3, v=3, k=3, d=10):
+    def __init__(self, h=3, v=3, k=3):
         self.h = h
         self.v = v
         self.k = k
-        self.max_depth = d
         actions = [(x, y) for x in range(1, h + 1)
                  for y in range(1, v + 1)]
         self.initial = State(to_move='X', utility=0, board={}, actions=actions)
+        self.max_depth = 0
 
     def is_terminal(self, state) -> bool:
         return state.utility == 1 or state.utility == -1 or len(state.actions) == 0
@@ -102,6 +103,9 @@ class Game:
             for y in range(1, self.v + 1):
                 print(board.get((x, y), '.'), end=' ')
             print()
+
+    def update_depth_limit(self, actions):
+        self.max_depth = round(2 + 8 * math.e**(-actions/25))
     
     def __repr__(self) -> str:
         pass
@@ -117,6 +121,7 @@ class Game:
             for player in players:
                 move = player(self, state)
                 state = self.result(state, move)
+                self.update_depth_limit(len(state.actions))
                 if self.is_terminal(state):
                     print(state)
                     return self.utility(state, self.to_move(self.initial))
