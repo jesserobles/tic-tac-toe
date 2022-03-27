@@ -30,10 +30,11 @@ class Game:
     """
     A class representing a tic-tac-toe game.
     """
-    def __init__(self, h=3, v=3, k=3):
+    def __init__(self, h=3, v=3, k=3, d=10):
         self.h = h
         self.v = v
         self.k = k
+        self.max_depth = d
         actions = [(x, y) for x in range(1, h + 1)
                  for y in range(1, v + 1)]
         self.initial = State(to_move='X', utility=0, board={}, actions=actions)

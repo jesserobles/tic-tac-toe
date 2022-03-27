@@ -64,22 +64,27 @@ function MIN-VALUE(game, state) returns a (utility, move) pair
             v, move←v2, a
     return v, move
 """
-
+import time
 def minimax_search(game, state):
+    s = time.time()
     player = game.to_move(state)
     value, move = max_value(game, state, player)
+    print(time.time() - s)
     return move
 
 def alpha_beta_search(game, state):
+    s=time.time()
     player = game.to_move(state)
     value, move = max_value(game, state, player, float('-inf'), float('inf'))
+    print(time.time()-s)
     return move
 
-def max_value(game, state, player, alpha=None, beta=None):
-    if game.is_terminal(state): return game.utility(state, player), None
+def max_value(game, state, player, alpha=None, beta=None, depth=0):
+    if depth == game.max_depth or game.is_terminal(state):
+        return game.utility(state, player), None
     v = float('-inf')
     for a in game.actions(state):
-        v2, a2 = min_value(game, game.result(state, a), player, alpha, beta)
+        v2, a2 = min_value(game, game.result(state, a), player, alpha, beta, depth+1)
         if v2 > v:
             v, move = v2, a
             if not alpha is None:
@@ -87,11 +92,12 @@ def max_value(game, state, player, alpha=None, beta=None):
             if not beta is None and v >= beta: return v, move
     return v, move
 
-def min_value(game, state, player, alpha=None, beta=None):
-    if game.is_terminal(state): return game.utility(state, player), None
+def min_value(game, state, player, alpha=None, beta=None, depth=0):
+    if depth == game.max_depth or game.is_terminal(state):
+        return game.utility(state, player), None
     v = float('inf')
     for a in game.actions(state):
-        v2, a2 = max_value(game, game.result(state, a), player, alpha, beta)
+        v2, a2 = max_value(game, game.result(state, a), player, alpha, beta, depth+1)
         if v2 < v:
             v, move = v2, a
             if not beta is None:
