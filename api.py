@@ -33,7 +33,7 @@ def add_team_member(team_id, user_id, url, headers):
     return requests.post(url, headers=headers, data=data)
 
 # Create a game
-def create_game(team_id_1, team_id_2, board_size=12, target=6):
+def create_game(team_id_1, team_id_2, url, headers, board_size=12, target=6):
     data = {
         "type": "game",
         "teamId1": team_id_1,
