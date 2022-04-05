@@ -31,3 +31,7 @@ def alpha_beta_player(game, state):
 def minmax_player(game,state):
     return minimax_search(game, state)
 
+
+def api_player(game, state):
+    """A method representing game play using the api"""
+    

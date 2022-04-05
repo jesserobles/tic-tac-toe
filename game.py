@@ -84,7 +84,7 @@ class Game:
 
     def k_in_row(self, board, move, player, delta_x_y):
         """Return true if there is a line through move on board for player."""
-        (delta_x, delta_y) = delta_x_y
+        delta_x, delta_y = delta_x_y
         x, y = move
         n = 0  # n is number of moves in row
         while board.get((x, y)) == player:
@@ -101,7 +101,7 @@ class Game:
         board = state.board
         for x in range(1, self.h + 1):
             for y in range(1, self.v + 1):
-                print(board.get((x, y), '.'), end=' ')
+                print(board.get((x, y), '-'), end=' ')
             print()
 
     def update_depth_limit(self, actions):

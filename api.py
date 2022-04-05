@@ -1,80 +1,114 @@
 import json
 
 import requests
+from requests.exceptions import HTTPError
 
-with open('apikey.json', 'r') as file:
-    apikey = json.load(file)
+# def validate_response(func):
+#     def wraps(*args, **kwargs):
+#         response = func(*args, **kwargs)
+#         payload = response.json()
+#         if payload["code"] != "OK":
+#             raise HTTPError(f"Received unexpected code: {payload['code']}")
+#         return response
+#     return wraps
 
-url = apikey['url']
-user_id = apikey['user_id']
-key = apikey['key']
-HEADERS = {
-    'x-api-key': key,
-    'userid': user_id,
-    'User-Agent': 'AI-Students' # Server throws security exception if this isn't set.
-}
+class APIPlayer:
+    def __init__(self, apikeyfile='apikey.json', team_id=1290, team_name="Team 6") -> None:
+        self.team_id = team_id
+        self.team_name = team_name
+        with open(apikeyfile, 'r') as file:
+            apipayload = json.load(file)
+        self.url = apipayload['url']
+        self.user_id = apipayload['user_id']
+        self.key = apipayload['key']
+        self.HEADERS = {
+            'x-api-key': self.key,
+            'userid': self.user_id,
+            'User-Agent': 'AI-Students' # Server throws security exception if this isn't set.
+        }
 
-# List my teams
-def list_my_teams(url, headers):
-    params = {'type': 'myTeams'}
-    return requests.get(url, headers=headers, params=params)
+    def validate_response(func):
+        """A decorator to validate the responses for the methods."""
+        def wraps(*args, **kwargs):
+            response = func(*args, **kwargs)
+            payload = response.json()
+            if payload["code"] != "OK":
+                raise HTTPError(f"Received unexpected code: {payload['code']}")
+            return response
+        return wraps
 
-# Create a team
-def create_team(team_name, url, headers):
-    data = {
-        "type": "team",
-        "name": "Team 6"
-    }
-    return requests.post(url, headers=headers, data=data) # Currently Failing!
+    @validate_response
+    def list_my_teams(self):
+        params = {'type': 'myTeams'}
+        return requests.get(self.url, headers=self.HEADERS, params=params)
+    
+    @validate_response
+    def create_team(self):
+        """
+        Sample response: {"code": "OK", "teamId": 1290}
+        """
+        data = {
+            "type": "team",
+            "name": self.team_name
+        }
+        return requests.post(self.url, headers=self.HEADERS, data=data)
 
-# Add a team member
-def add_team_member(team_id, user_id, url, headers):
-    data = {"type": "member", "teamId": team_id, "userId": user_id}
-    return requests.post(url, headers=headers, data=data)
+    @validate_response
+    def add_team_member(self, user_id):
+        data = {"type": "member", "teamId": self.team_id, "userId": user_id}
+        return requests.post(self.url, headers=self.HEADERS, data=data)
 
-# Create a game
-def create_game(team_id_1, team_id_2, url, headers, board_size=12, target=6):
-    data = {
-        "type": "game",
-        "teamId1": team_id_1,
-        "teamId2": team_id_2,
-        "gameType": "TTT",
-        "boardSize": board_size,
-        "target": target
-    }
-    return requests.post(url, headers=headers, data=data)
+    @validate_response
+    def create_game(self, opponent_id, board_size=3, target=3):
+        """
+        Sample response {"code": "OK", "gameId": 3302}
+        """
+        data = {
+            "type": "game",
+            "teamId1": self.team_id,
+            "teamId2": opponent_id,
+            "gameType": "TTT",
+            "boardSize": board_size,
+            "target": target
+        }
+        return requests.post(self.url, headers=self.HEADERS, data=data)
 
-def get_my_games(url, headers):
-    return requests.get(url, headers=headers, params={"type": "myGames"}).json()
+    @validate_response
+    def get_my_games(self):
+        return requests.get(self.url, headers=self.HEADERS, params={"type": "myGames"})
 
-def move(x, y, url, headers, team_id, game_id):
-    data = {
-        "type": "move",
-        "teamId": team_id,
-        "move": f"{x},{y}",
-        "gameId": game_id
+    @validate_response
+    def move(self, game_id, x, y):
+        data = {
+            "type": "move",
+            "teamId": self.team_id,
+            "move": f"{x},{y}",
+            "gameId": game_id
 
-    }
-    return requests.post(url, headers=headers, data=data)
+        }
+        return requests.post(self.url, headers=self.HEADERS, data=data)
 
-def get_moves(game_id, url, headers, count=20):
-    params = {
-        "type": "moves",
-        "gameId": game_id,
-        "count": count
-    }
-    return requests.get(url, headers=headers, params=params)
+    @validate_response
+    def get_moves(self, game_id, count=20):
+        params = {
+            "type": "moves",
+            "gameId": game_id,
+            "count": count
+        }
+        return requests.get(self.url, headers=self.HEADERS, params=params)
 
-def get_board_string(game_id, url, headers):
-    params = {
-        "gameId": game_id,
-        "type": "boardString"
-    }
-    return requests.get(url, headers=headers, params=params)
+    @validate_response
+    def get_board_string(self, game_id):
+        params = {
+            "gameId": game_id,
+            "type": "boardString"
+        }
+        return requests.get(self.url, headers=self.HEADERS, params=params)
 
-def get_board_map(game_id, url, headers):
-    params = {
-        "type": "boardMap",
-        "gameId": game_id
-    }
-    return requests.get(url, headers=headers, params=params)
+    @validate_response
+    def get_board_map(self, game_id):
+        params = {
+            "type": "boardMap",
+            "gameId": game_id
+        }
+        return requests.get(self.url, headers=self.HEADERS, params=params)
