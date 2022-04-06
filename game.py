@@ -1,4 +1,5 @@
 import math
+import random
 from time import sleep
 
 from api import APIPlayer
@@ -38,6 +39,7 @@ class Game:
         self.h = h
         self.v = v
         self.k = k
+        self.spaces = self.h * self.v
         actions = [(x, y) for x in range(1, h + 1)
                  for y in range(1, v + 1)]
         self.initial = State(h=self.h, v=self.v, to_move='X', utility=0, board={}, actions=actions)
@@ -109,7 +111,6 @@ class Game:
 
     def update_depth_limit(self, actions):
         self.max_depth = round(2 + 8 * math.e**(-actions/25))
-        print(self.max_depth)
     
     def __repr__(self) -> str:
         pass
@@ -118,15 +119,17 @@ class Game:
     def from_json(self, json):
         pass
     
-    def play_game(self, *players):
+    def play_game(self, *players, max_depth):
         """
         Play an n-person, move-alternating game.
         """
         state = self.initial
         while True:
             for player in players:
-                move = player(self, state)
+                move = player(self, state, max_depth=max_depth)
                 state = self.result(state, move)
+                print(state)
+                print()
                 self.update_depth_limit(len(state.actions))
                 if self.is_terminal(state):
                     print(state)

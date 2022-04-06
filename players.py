@@ -32,8 +32,8 @@ def alpha_beta_player(game, state):
     return alpha_beta_search(game, state)
 
 
-def alpha_beta_depth_limited_player(game, state):
-    return alpha_beta_depth_limited_search(game, state)
+def alpha_beta_depth_limited_player(game, state, max_depth=4):
+    return alpha_beta_depth_limited_search(game, state, max_depth=max_depth)
 
 def minmax_player(game, state):
     return minimax_search(game, state)
