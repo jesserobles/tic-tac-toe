@@ -1,14 +1,14 @@
 
 def max_value(game, state, alpha, beta, depth, depth_test, evaluate):
-        if depth_test(state, depth):
-            return evaluate(state)
-        v = float('-inf')
-        for a in game.actions(state):
-            v = max(v, min_value(game, game.result(state, a), alpha, beta, depth + 1, depth_test, evaluate))
-            if v >= beta:
-                return v
-            alpha = max(alpha, v)
-        return v
+    if depth_test(state, depth):
+        return evaluate(state)
+    v = float('-inf')
+    for a in game.actions(state):
+        v = max(v, min_value(game, game.result(state, a), alpha, beta, depth + 1, depth_test, evaluate))
+        if v >= beta:
+            return v
+        alpha = max(alpha, v)
+    return v
 
 def min_value(game, state, alpha, beta, depth, depth_test, evaluate):
     if depth_test(state, depth):
