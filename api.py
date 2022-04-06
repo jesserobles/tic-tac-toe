@@ -1,21 +1,15 @@
+from collections import defaultdict
 import json
 
 import requests
 from requests.exceptions import HTTPError
 
-# def validate_response(func):
-#     def wraps(*args, **kwargs):
-#         response = func(*args, **kwargs)
-#         payload = response.json()
-#         if payload["code"] != "OK":
-#             raise HTTPError(f"Received unexpected code: {payload['code']}")
-#         return response
-#     return wraps
 
 class APIPlayer:
-    def __init__(self, apikeyfile='apikey.json', team_id=1290, team_name="Team 6") -> None:
+    def __init__(self, apikeyfile='apikey.json', team_id=1290, team_name="Team 6", game_id=None) -> None:
         self.team_id = team_id
         self.team_name = team_name
+        self.game_id = game_id
         with open(apikeyfile, 'r') as file:
             apipayload = json.load(file)
         self.url = apipayload['url']
@@ -28,7 +22,10 @@ class APIPlayer:
         }
 
     def validate_response(func):
-        """A decorator to validate the responses for the methods."""
+        """
+        A decorator to validate the responses for the methods in this class.
+        It simply checks that code=OK.
+        """
         def wraps(*args, **kwargs):
             response = func(*args, **kwargs)
             payload = response.json()
@@ -71,7 +68,9 @@ class APIPlayer:
             "boardSize": board_size,
             "target": target
         }
-        return requests.post(self.url, headers=self.HEADERS, data=data)
+        r = requests.post(self.url, headers=self.HEADERS, data=data)
+        self.game_id = r.json()['gameId']
+        return r
 
     @validate_response
     def get_my_games(self):
@@ -90,12 +89,32 @@ class APIPlayer:
 
     @validate_response
     def get_moves(self, game_id, count=20):
+        """
+        Sample response:
+        {
+            "moves": [
+                {
+                    "moveId": "86727",
+                    "gameId": "3302",
+                    "teamId": "1290",
+                    "move": "4,4",
+                    "symbol": "O",
+                    "moveX": "4",
+                    "moveY": "4"
+                }
+            ],
+            "code": "OK"
+        }
+        """
         params = {
             "type": "moves",
             "gameId": game_id,
             "count": count
         }
         return requests.get(self.url, headers=self.HEADERS, params=params)
+    
+    def get_move(self, state):
+        pass
 
     @validate_response
     def get_board_string(self, game_id):
@@ -112,3 +131,23 @@ class APIPlayer:
             "gameId": game_id
         }
         return requests.get(self.url, headers=self.HEADERS, params=params)
+    
+    def parse_moves(self, moves):
+        """
+        moves = [
+                {
+                    "moveId": "86727",
+                    "gameId": "3302",
+                    "teamId": "1290",
+                    "move": "4,4",
+                    "symbol": "O",
+                    "moveX": "4",
+                    "moveY": "4"
+                }
+            ]
+        """
+        parsed_moves = []
+        for move in moves:
+            if not int(move["teamId"]) != self.team_id:
+                parsed_moves.append((int(move['moveX']), int(move['moveY'])))
+        return parsed_moves

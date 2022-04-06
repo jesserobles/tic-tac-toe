@@ -1,4 +1,7 @@
 import random
+from time import sleep
+
+from api import APIPlayer
 from minimax import minimax_search, alpha_beta_search
 
 def query_player(game, state):
@@ -28,10 +31,14 @@ def alpha_beta_player(game, state):
     return alpha_beta_search(game, state)
 
 
-def minmax_player(game,state):
+def minmax_player(game, state):
     return minimax_search(game, state)
 
 
 def api_player(game, state):
     """A method representing game play using the api"""
-    
+    player = APIPlayer(game.game_id)
+    move = player.get_move(game_id, state)
+    while move is None:
+        sleep(10)
+        move = apiplayer.get_move(game_id, state)

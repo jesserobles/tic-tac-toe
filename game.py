@@ -1,12 +1,15 @@
 import math
+from time import sleep
+
+from api import APIPlayer
 
 class State:
-    def __init__(self, to_move="X", utility=0, board={}, actions=None) -> None:
+    def __init__(self, h=3, v=3, to_move="X", utility=0, board={}, actions=None) -> None:
         self.to_move = to_move
         self.utility = utility
         self.board = board
-        self.h = None
-        self.v = None
+        self.h = h
+        self.v = v
         if self.board:
             self.h = max(key[0] for key in self.board)
             self.v = max(key[-1] for key in self.board)
@@ -23,7 +26,7 @@ class State:
         string = ''
         for x in range(1, self.h + 1):
             for y in range(1, self.v + 1):
-                string += self.board.get((x, y), '.') + ' '
+                string += self.board.get((x, y), '-') + ' '
             string = string.strip() + "\n"
         return string
 
@@ -37,7 +40,7 @@ class Game:
         self.k = k
         actions = [(x, y) for x in range(1, h + 1)
                  for y in range(1, v + 1)]
-        self.initial = State(to_move='X', utility=0, board={}, actions=actions)
+        self.initial = State(h=self.h, v=self.v, to_move='X', utility=0, board={}, actions=actions)
         self.max_depth = 0
 
     def is_terminal(self, state) -> bool:
@@ -60,7 +63,7 @@ class Game:
         board[move] = state.to_move
         actions = list(state.actions)
         actions.remove(move)
-        return State(to_move=state.opposite,
+        return State(self.h, self.v, to_move=state.opposite,
                          utility=self.compute_utility(board, move, state.to_move),
                          board=board, actions=actions)
     
@@ -115,7 +118,9 @@ class Game:
         pass
     
     def play_game(self, *players):
-        """Play an n-person, move-alternating game."""
+        """
+        Play an n-person, move-alternating game.
+        """
         state = self.initial
         while True:
             for player in players:
@@ -125,3 +130,45 @@ class Game:
                 if self.is_terminal(state):
                     print(state)
                     return self.utility(state, self.to_move(self.initial))
+
+    def play_api(self, player, opponent_id, game_id=None):
+        """
+        TODO: Update to use API. Which player goes first?
+        If we go first:
+        1. Create a game with opponent id.
+        2. Send first move. Validate response.
+        3. Poll for opponent response, sleep if None. Timeout after 60 seconds?
+            move = apiplayer.get_move(game_id, state)
+            while move is None:
+                sleep(10)
+                move = apiplayer.get_move(game_id, state)
+
+        4. Once response is received, get the state and plan next move.
+        """
+        apiplayer = APIPlayer(game_id=game_id)
+        state = self.initial
+        while True:
+            # First our move
+            move = player(self, state)
+            # Send the move
+            r = apiplayer.move(game_id, move[0], move[1])
+            # Update the state
+            state = self.result(state, move)
+            self.update_depth_limit(len(state.actions))
+            if self.is_terminal(state):
+                print(state)
+                return self.utility(state, self.to_move(self.initial))
+            # Now wait for opponent move
+            move = player.get_move(game_id, state)
+            tries = 1
+            while move is None:
+                sleep(10) # Wait 10 seconds
+                move = apiplayer.get_move(game_id, state)
+                tries += 1
+                if tries > 5: # After 6 tries, just quit (60 second timeout)
+                    raise ValueError("No move from opponent")
+            state = self.result(state, move)
+            self.update_depth_limit(len(state.actions))
+            if self.is_terminal(state):
+                print(state)
+                return self.utility(state, self.to_move(self.initial))
