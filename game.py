@@ -109,6 +109,7 @@ class Game:
 
     def update_depth_limit(self, actions):
         self.max_depth = round(2 + 8 * math.e**(-actions/25))
+        print(self.max_depth)
     
     def __repr__(self) -> str:
         pass
@@ -131,44 +132,44 @@ class Game:
                     print(state)
                     return self.utility(state, self.to_move(self.initial))
 
-    def play_api(self, player, opponent_id, game_id=None):
-        """
-        TODO: Update to use API. Which player goes first?
-        If we go first:
-        1. Create a game with opponent id.
-        2. Send first move. Validate response.
-        3. Poll for opponent response, sleep if None. Timeout after 60 seconds?
-            move = apiplayer.get_move(game_id, state)
-            while move is None:
-                sleep(10)
-                move = apiplayer.get_move(game_id, state)
+    # def play_api(self, player, opponent_id, game_id=None):
+    #     """
+    #     TODO: Update to use API. Which player goes first?
+    #     If we go first:
+    #     1. Create a game with opponent id.
+    #     2. Send first move. Validate response.
+    #     3. Poll for opponent response, sleep if None. Timeout after 60 seconds?
+    #         move = apiplayer.get_move(game_id, state)
+    #         while move is None:
+    #             sleep(10)
+    #             move = apiplayer.get_move(game_id, state)
 
-        4. Once response is received, get the state and plan next move.
-        """
-        apiplayer = APIPlayer(game_id=game_id)
-        state = self.initial
-        while True:
-            # First our move
-            move = player(self, state)
-            # Send the move
-            r = apiplayer.move(game_id, move[0], move[1])
-            # Update the state
-            state = self.result(state, move)
-            self.update_depth_limit(len(state.actions))
-            if self.is_terminal(state):
-                print(state)
-                return self.utility(state, self.to_move(self.initial))
-            # Now wait for opponent move
-            move = player.get_move(game_id, state)
-            tries = 1
-            while move is None:
-                sleep(10) # Wait 10 seconds
-                move = apiplayer.get_move(game_id, state)
-                tries += 1
-                if tries > 5: # After 6 tries, just quit (60 second timeout)
-                    raise ValueError("No move from opponent")
-            state = self.result(state, move)
-            self.update_depth_limit(len(state.actions))
-            if self.is_terminal(state):
-                print(state)
-                return self.utility(state, self.to_move(self.initial))
+    #     4. Once response is received, get the state and plan next move.
+    #     """
+    #     apiplayer = APIPlayer(game_id=game_id)
+    #     state = self.initial
+    #     while True:
+    #         # First our move
+    #         move = player(self, state)
+    #         # Send the move
+    #         r = apiplayer.move(game_id, move[0], move[1])
+    #         # Update the state
+    #         state = self.result(state, move)
+    #         self.update_depth_limit(len(state.actions))
+    #         if self.is_terminal(state):
+    #             print(state)
+    #             return self.utility(state, self.to_move(self.initial))
+    #         # Now wait for opponent move
+    #         move = player.get_move(game_id, state)
+    #         tries = 1
+    #         while move is None:
+    #             sleep(10) # Wait 10 seconds
+    #             move = apiplayer.get_move(game_id, state)
+    #             tries += 1
+    #             if tries > 5: # After 6 tries, just quit (60 second timeout)
+    #                 raise ValueError("No move from opponent")
+    #         state = self.result(state, move)
+    #         self.update_depth_limit(len(state.actions))
+    #         if self.is_terminal(state):
+    #             print(state)
+    #             return self.utility(state, self.to_move(self.initial))

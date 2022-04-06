@@ -1,5 +1,6 @@
 import random
 from time import sleep
+from alphabeta import alpha_beta_depth_limited_search
 
 from api import APIPlayer
 from minimax import minimax_search, alpha_beta_search
@@ -30,6 +31,9 @@ def random_player(game, state):
 def alpha_beta_player(game, state):
     return alpha_beta_search(game, state)
 
+
+def alpha_beta_depth_limited_player(game, state):
+    return alpha_beta_depth_limited_search(game, state)
 
 def minmax_player(game, state):
     return minimax_search(game, state)
