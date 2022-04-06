@@ -42,10 +42,8 @@ def alpha_beta_depth_limited_search(game, state, max_depth=4, evaluate=None):
     print(time.time() - s)
     return best_action
 
-def depth_test_function(game, state, depth, max_depth=4):
-    # if max_depth is None:
-    #     max_depth = game.max_depth
-    return depth > max_depth or game.is_terminal(state)
+def depth_test_function(game, state, depth):
+    return depth > game.max_depth or game.is_terminal(state)
 
 def evaluation_function(game, state, player):
     return game.utility(state, player)
