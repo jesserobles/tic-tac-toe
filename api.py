@@ -20,6 +20,7 @@ class APIPlayer:
             'userid': self.user_id,
             'User-Agent': 'AI-Students' # Server throws security exception if this isn't set.
         }
+        self.move_id_cache = []
 
     def validate_response(func):
         """
@@ -77,18 +78,20 @@ class APIPlayer:
         return requests.get(self.url, headers=self.HEADERS, params={"type": "myGames"})
 
     @validate_response
-    def move(self, game_id, x, y):
+    def move(self, x, y):
         data = {
             "type": "move",
             "teamId": self.team_id,
             "move": f"{x},{y}",
-            "gameId": game_id
+            "gameId": self.game_id
 
         }
+
         return requests.post(self.url, headers=self.HEADERS, data=data)
 
+
     @validate_response
-    def get_moves(self, game_id, count=20):
+    def get_moves(self, count=1000):
         """
         Sample response:
         {
@@ -108,7 +111,7 @@ class APIPlayer:
         """
         params = {
             "type": "moves",
-            "gameId": game_id,
+            "gameId": self.game_id,
             "count": count
         }
         return requests.get(self.url, headers=self.HEADERS, params=params)
@@ -117,18 +120,18 @@ class APIPlayer:
         pass
 
     @validate_response
-    def get_board_string(self, game_id):
+    def get_board_string(self):
         params = {
-            "gameId": game_id,
+            "gameId": self.game_id,
             "type": "boardString"
         }
         return requests.get(self.url, headers=self.HEADERS, params=params)
 
     @validate_response
-    def get_board_map(self, game_id):
+    def get_board_map(self):
         params = {
             "type": "boardMap",
-            "gameId": game_id
+            "gameId": self.game_id
         }
         return requests.get(self.url, headers=self.HEADERS, params=params)
     
@@ -151,3 +154,9 @@ class APIPlayer:
             if not int(move["teamId"]) != self.team_id:
                 parsed_moves.append((int(move['moveX']), int(move['moveY'])))
         return parsed_moves
+
+    def add_move_to_cache(self, move_id):
+        self.move_id_cache.append(move_id)
+
+    def get_move_id_cache(self):
+        return self.move_id_cache

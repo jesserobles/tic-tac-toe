@@ -1,5 +1,6 @@
 import math
 import random
+import json
 from time import sleep
 
 from api import APIPlayer
@@ -27,7 +28,7 @@ class State:
         string = ''
         for x in range(1, self.h + 1):
             for y in range(1, self.v + 1):
-                string += self.board.get((x, y), '-') + ' '
+                string += self.board.get((x, y), '-')
             string = string.strip() + "\n"
         return string
 
@@ -135,44 +136,46 @@ class Game:
                     print(state)
                     return self.utility(state, self.to_move(self.initial))
 
-    # def play_api(self, player, opponent_id, game_id=None):
-    #     """
-    #     TODO: Update to use API. Which player goes first?
-    #     If we go first:
-    #     1. Create a game with opponent id.
-    #     2. Send first move. Validate response.
-    #     3. Poll for opponent response, sleep if None. Timeout after 60 seconds?
-    #         move = apiplayer.get_move(game_id, state)
-    #         while move is None:
-    #             sleep(10)
-    #             move = apiplayer.get_move(game_id, state)
+    def play_api(self, player, id, opponent_id, apikeyfile, first, game_id=None):
+        apiplayer = APIPlayer(apikeyfile=apikeyfile, team_id=id, game_id=game_id)
+        state = self.initial
 
-    #     4. Once response is received, get the state and plan next move.
-    #     """
-    #     apiplayer = APIPlayer(game_id=game_id)
-    #     state = self.initial
-    #     while True:
-    #         # First our move
-    #         move = player(self, state)
-    #         # Send the move
-    #         r = apiplayer.move(game_id, move[0], move[1])
-    #         # Update the state
-    #         state = self.result(state, move)
-    #         self.update_depth_limit(len(state.actions))
-    #         if self.is_terminal(state):
-    #             print(state)
-    #             return self.utility(state, self.to_move(self.initial))
-    #         # Now wait for opponent move
-    #         move = player.get_move(game_id, state)
-    #         tries = 1
-    #         while move is None:
-    #             sleep(10) # Wait 10 seconds
-    #             move = apiplayer.get_move(game_id, state)
-    #             tries += 1
-    #             if tries > 5: # After 6 tries, just quit (60 second timeout)
-    #                 raise ValueError("No move from opponent")
-    #         state = self.result(state, move)
-    #         self.update_depth_limit(len(state.actions))
-    #         if self.is_terminal(state):
-    #             print(state)
-    #             return self.utility(state, self.to_move(self.initial))
+        if game_id is None:
+            game_id = apiplayer.create_game(opponent_id).json()['gameId']
+            print('Game ID: ' + str(game_id))
+
+        if first:
+            move = player(self, state)
+            apiplayer.move(move[0]-1, move[1]-1)  # Code is 1 indexed, but api is 0 index
+            state = self.result(state, move)
+            print(state)
+
+        while True:
+            opponent_move = None
+            while opponent_move is None:
+                sleep(5)
+                result = json.loads(apiplayer.get_moves().text)
+                if result['code'] == 'OK':
+                    for move in result['moves']:
+                        if int(move['moveId']) not in apiplayer.get_move_id_cache():
+                            apiplayer.add_move_to_cache(int(move['moveId']))
+
+                            if int(move['teamId']) == opponent_id:
+                                # Code is 1 indexed, but api is 0 index
+                                opponent_move = (int(move['moveX'])+1, int(move['moveY'])+1)
+
+            state = self.result(state, opponent_move)
+            print(state)
+            if self.is_terminal(state):
+                return self.utility(state, self.to_move(self.initial))
+
+            # Our Move
+            move = player(self, state)
+            apiplayer.move(move[0]-1, move[1]-1)  # Code is 1 indexed, but api is 0 index
+
+            state = self.result(state, move)
+            print(state)
+            self.update_depth_limit(len(state.actions))
+            if self.is_terminal(state):
+                print(state)
+                return self.utility(state, self.to_move(self.initial))
