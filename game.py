@@ -136,16 +136,17 @@ class Game:
                     print(state)
                     return self.utility(state, self.to_move(self.initial))
 
-    def play_api(self, player, id, opponent_id, apikeyfile, first, game_id=None):
+    def play_api(self, player, id, opponent_id, apikeyfile, first, game_id=None, board_size=3, target=3):
         apiplayer = APIPlayer(apikeyfile=apikeyfile, team_id=id, game_id=game_id)
         state = self.initial
+        self.update_depth_limit(len(state.actions))
 
         if game_id is None:
-            game_id = apiplayer.create_game(opponent_id).json()['gameId']
+            game_id = apiplayer.create_game(opponent_id, board_size, target).json()['gameId']
             print('Game ID: ' + str(game_id))
 
         if first:
-            move = player(self, state)
+            move = player(self, state, max_depth=self.max_depth)
             apiplayer.move(move[0]-1, move[1]-1)  # Code is 1 indexed, but api is 0 index
             state = self.result(state, move)
             print(state)
@@ -153,7 +154,7 @@ class Game:
         while True:
             opponent_move = None
             while opponent_move is None:
-                sleep(5)
+                sleep(2)
                 result = json.loads(apiplayer.get_moves().text)
                 if result['code'] == 'OK':
                     for move in result['moves']:
@@ -170,7 +171,7 @@ class Game:
                 return self.utility(state, self.to_move(self.initial))
 
             # Our Move
-            move = player(self, state)
+            move = player(self, state, max_depth=self.max_depth)
             apiplayer.move(move[0]-1, move[1]-1)  # Code is 1 indexed, but api is 0 index
 
             state = self.result(state, move)

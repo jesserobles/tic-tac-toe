@@ -3,5 +3,7 @@
   "opponent_id": 1303,
   "api_key_file": "apikey.json",
   "move_first": true,
-  "game_id": null
+  "game_id": null,
+  "board_size": 4,
+  "target": 3
 }
