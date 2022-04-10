@@ -82,8 +82,6 @@ def alpha_beta_search(game, state):
 def max_value(game, state, player, alpha=None, beta=None, depth=0):
     if game.is_terminal(state):
         return game.utility(state, player), None
-    if depth == game.max_depth:
-        return game.utility(state, player), best_action(game, state, player)
     v = float('-inf')
     for a in game.actions(state):
         v2, a2 = min_value(game, game.result(state, a), player, alpha, beta, depth+1)
@@ -107,8 +105,6 @@ def best_action(game, state, player):
 def min_value(game, state, player, alpha=None, beta=None, depth=0):
     if game.is_terminal(state):
         return game.utility(state, player), None
-    if depth == game.max_depth:
-        return game.utility(state, player), best_action(game, state, player)
     v = float('inf')
     for a in game.actions(state):
         v2, a2 = max_value(game, game.result(state, a), player, alpha, beta, depth+1)

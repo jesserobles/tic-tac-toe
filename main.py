@@ -1,5 +1,5 @@
 from game import Game
-from players import random_player, query_player, minmax_player, alpha_beta_player, alpha_beta_depth_limited_player
+from players import alpha_beta_depth_limited_player
 import sys
 import json
 
@@ -8,7 +8,7 @@ with open(config_file, 'r') as file:
     config = json.load(file)
 
 game = Game(config['board_size'], config['board_size'], config['target'])
-# game.play_game(alpha_beta_depth_limited_player, query_player, max_depth=12)
+
 game.play_api(
     player=alpha_beta_depth_limited_player,
     id=config['id'],

@@ -1,5 +1,11 @@
+"""
+This module contains the depth limited version of the alpha-beta pruning search. The regular
+alpha-beta search is in the minimap.py module, since it uses the same min and max functions
+as the minimax search.
+"""
 import random
 import time
+
 
 def max_value(game, state, player, alpha, beta, depth, depth_test, evaluate):
     if depth_test(game, state, depth):
@@ -26,10 +32,6 @@ def min_value(game, state, player, alpha, beta, depth, depth_test, evaluate):
 def alpha_beta_depth_limited_search(game, state, max_depth=4, evaluate=None):
     s = time.time()
     player = game.to_move(state)
-    actions = game.actions(state)
-    # game_progress = len(actions)/game.spaces
-    # if game_progress > 0.75:
-    #     return random.choice(actions)
     evaluate = evaluate or (lambda state: game.utility(state, player))
     best_score = float('-inf')
     beta = float('inf')

@@ -115,19 +115,15 @@ class Game:
     
     def __repr__(self) -> str:
         pass
-
-    @classmethod
-    def from_json(self, json):
-        pass
     
-    def play_game(self, *players, max_depth):
+    def play_game(self, *players):
         """
         Play an n-person, move-alternating game.
         """
         state = self.initial
         while True:
             for player in players:
-                move = player(self, state, max_depth=max_depth)
+                move = player(self, state)
                 state = self.result(state, move)
                 print(state)
                 print()
